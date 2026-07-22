@@ -1,5 +1,8 @@
 import fs from 'fs';
 import readline from 'readline';
+import { Effect } from "effect"
+import { open } from 'node:fs/promises';
+import { withConsoleError } from 'effect/Logger';
 
 function is2(words: readonly string[]): words is [string, string] {
     return words.length === 2;
@@ -17,6 +20,31 @@ function hasLength<T, N extends number>(
   return arr.length === length;
 }
 
+async function readLines(filePath: string, key: string): Promise<Effect.Effect<string, string>> {
+  const file = await open(filePath);
+
+  for await (const line of file.readLines()) {
+    console.log(`--: ${line}`);
+    if (line.trimStart().startsWith(key)) {
+        const words = line.split('=', 2);
+        // for (const w of words) {
+        //     console.log(`*${w.trim()}*`);
+        // }
+
+        if (words.length>=2 && words[1]) {
+            // return words[1].trim();
+            return Effect.succeed(words[1].trim());
+            // console.log(`>>${words[1].trim()}<<`)
+        } else {
+            return Effect.fail('No filepath');
+            // console.log('?');
+        }
+    }
+  }
+
+  return Effect.fail('Key p12 not found');
+}
+
 async function processLineByLine() {
   const fileStream = fs.createReadStream('/tmp/tmp.txt');
 
@@ -28,13 +56,14 @@ async function processLineByLine() {
   for await (const line of rl) {
     console.log(`--: ${line}`);
     if (line.trimStart().startsWith('p12')) {
-        const words = line.split('=', 2);
+        const words = line.split('=', 1);
         // for (const w of words) {
         //     console.log(`*${w.trim()}*`);
         // }
 
-        if (words.length==2 && words[1]!=undefined) {
-            return words[1].trim();
+        if (words.length==2 && words[1]) {
+            // return words[1].trim();
+            return Effect.succeed(words[1].trim());
             // console.log(`>>${words[1].trim()}<<`)
         } else {
             return null;
@@ -46,5 +75,13 @@ async function processLineByLine() {
   return null;
 }
 
-const p12 = await processLineByLine();
+// const p12 = await processLineByLine();
+// const p12 = await readLines('/tmp/tmp.txt', 'p12');
+const p12 = await readLines('/tmp/tmp.txt', 'p12');
 console.log(`p12=${p12}.`);
+
+const result = Effect.match(p12, {
+    onSuccess: (value) => `p12=${value}.`,
+    onFailure: (error) => `failure: ${error}`
+});
+Effect.runPromise(result).then(console.log);

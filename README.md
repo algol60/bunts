@@ -18,3 +18,13 @@ This project was created using `bun create tui`. [create-tui](https://git.new/cr
 ## Adding type definitions
 
 bun add -d @types/bun
+bun add effect
+bun add -d @effect/language-service
+
+## tsconfig.json
+
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ],
