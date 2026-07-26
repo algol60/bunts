@@ -2,6 +2,9 @@ import { CliRenderer, BoxRenderable, SelectRenderable, TextRenderable, createCli
 import { element } from 'effect/Schema';
 import fs from 'node:fs';
 
+const renderer = await createCliRenderer({
+  exitOnCtrlC: false
+})
 const focusableElements: SelectRenderable[] = []
 let currentFocusIndex = 0
 
@@ -25,7 +28,7 @@ function updateFocus(): void {
   // }
 
 
-function handleKeyPress(key: KeyEvent): void {
+function handleKeyPress(key: KeyEvent) {
   if (key.name === 'tab') {
     if (key.shift) {
       currentFocusIndex = (currentFocusIndex - 1 + focusableElements.length) % focusableElements.length
@@ -34,6 +37,16 @@ function handleKeyPress(key: KeyEvent): void {
     }
     updateFocus()
     return
+  } else if (key.name === 'return') {
+    renderer.destroy()
+  } else if (key.name === 'escape') {
+    renderer.destroy()
+  } else if (key.name === '`') {
+      renderer.console.toggle()
+  } else if (key.name === ".") {
+    renderer.toggleDebugOverlay()
+  } else {
+    console.log(`Ignored key "${key.name}"`)
   }
 }
 
@@ -239,10 +252,10 @@ async function main() {
     {name: 'Two', description: '222', value: 'value2'}
   ]
 
-  const renderer = await createCliRenderer({
-    exitOnCtrlC: true,
-    targetFps: 30,
-  })
+  // const renderer = await createCliRenderer({
+  //   exitOnCtrlC: true,
+  //   targetFps: 30,
+  // })
   renderer.keyInput.on('keypress', handleKeyPress)
 
   createLayout(renderer, selectOptions, sizeOptions)
@@ -263,8 +276,7 @@ try {
     } else {
       console.log(`Unexpected error: ${error}`)
     }
-  }
-  else {
+  } else {
     console.log(`Unexpected problem: ${error}`)
   }
 }
