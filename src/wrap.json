@@ -1,0 +1,17 @@
+[
+    {
+        "label": "hello",
+        "descr": "greeting",
+        "url": "https://localhost/"
+    },
+    {
+        "label": "there",
+        "descr": "jedi",
+        "url": "https://localhost:9999/"
+    },
+    {
+        "label": "you",
+        "descr": "other",
+        "url": "https://localhost:9997/"
+    }
+]
