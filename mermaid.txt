@@ -1,0 +1,1 @@
+src/assets/javascripts/components/content/mermaid/index.ts
