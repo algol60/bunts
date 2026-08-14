@@ -1,0 +1,17 @@
+{
+  "name": "tmp",
+  "private": true,
+  "scripts": {
+    "dev": "bun img.ts",
+    "exe": "bun build img.ts --compile --outfile /tmp/img"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.5.2"
+  }
+}
