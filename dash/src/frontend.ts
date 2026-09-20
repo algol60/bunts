@@ -286,6 +286,18 @@ async function loadToolChart(range: string) {
     options: {
       ...commonOptions(),
       indexAxis: 'y',
+      plugins: {
+        tooltip: {
+          callbacks: {
+            afterLabel: (context) => {
+              const total = data.data.reduce((sum, v) => sum + v, 0);
+              const value = data.data[context.dataIndex];
+              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+              return `${pct}% of total`;
+            },
+          },
+        },
+      },
     },
   });
 }
