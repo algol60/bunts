@@ -294,6 +294,22 @@ function selectedRange(id: string): string {
   return (document.getElementById(id) as HTMLSelectElement).value;
 }
 
+async function downloadChartData(api: string, rangeId: string | null) {
+  const url = rangeId
+    ? `${api}?range=${encodeURIComponent(selectedRange(rangeId))}`
+    : api;
+  const res = await fetch(url);
+  const blob = await res.blob();
+  const url2 = URL.createObjectURL(blob);
+  const name = api.split("/").pop() as string;
+  const when = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = url2;
+  a.download = `${name}-chart-data-${when}.json`;
+  a.click();
+  URL.revokeObjectURL(url2);
+}
+
 export async function loadAllCharts() {
   if (loading) return;
   loading = true;
@@ -368,5 +384,12 @@ areaRange.addEventListener("change", () => loadAreaChart(areaRange.value));
 
 const tokenRange = document.getElementById("tokenRange") as HTMLSelectElement;
 tokenRange.addEventListener("change", () => loadTokenChart(tokenRange.value));
+
+document.querySelectorAll<HTMLButtonElement>("[data-api]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const api = btn.dataset.api as string;
+    downloadChartData(api, btn.dataset.range ?? null);
+  });
+});
 
 loadPage(currentPage);

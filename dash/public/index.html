@@ -40,19 +40,25 @@
           <section class="card wide">
             <div class="card-header">
               <h2>Revenue Trend</h2>
-              <select id="lineRange" class="range-select" aria-label="Time range">
-                <option value="7d" selected>7 days</option>
-                <option value="14d">14 days</option>
-                <option value="28d">28 days</option>
-                <option value="1y">1 year</option>
-                <option value="all">All</option>
-              </select>
+              <div class="controls">
+                <select id="lineRange" class="range-select" aria-label="Time range">
+                  <option value="7d" selected>7 days</option>
+                  <option value="14d">14 days</option>
+                  <option value="28d">28 days</option>
+                  <option value="1y">1 year</option>
+                  <option value="all">All</option>
+                </select>
+                <button type="button" class="data-btn" data-api="/api/line" data-range="lineRange">Data</button>
+              </div>
             </div>
             <div class="chart-container"><canvas id="lineChart"></canvas></div>
           </section>
 
           <section class="card wide">
-            <h2>Weekly Sales</h2>
+            <div class="card-header">
+              <h2>Weekly Sales</h2>
+              <button type="button" class="data-btn" data-api="/api/bar">Data</button>
+            </div>
             <div class="chart-container"><canvas id="barChart"></canvas></div>
           </section>
         </div>
@@ -63,19 +69,25 @@
           <section class="card wide">
             <div class="card-header">
               <h2>User Growth</h2>
-              <select id="areaRange" class="range-select" aria-label="Time range">
-                <option value="7d" selected>7 days</option>
-                <option value="14d">14 days</option>
-                <option value="28d">28 days</option>
-                <option value="1y">1 year</option>
-                <option value="all">All</option>
-              </select>
+              <div class="controls">
+                <select id="areaRange" class="range-select" aria-label="Time range">
+                  <option value="7d" selected>7 days</option>
+                  <option value="14d">14 days</option>
+                  <option value="28d">28 days</option>
+                  <option value="1y">1 year</option>
+                  <option value="all">All</option>
+                </select>
+                <button type="button" class="data-btn" data-api="/api/area" data-range="areaRange">Data</button>
+              </div>
             </div>
             <div class="chart-container"><canvas id="areaChart"></canvas></div>
           </section>
 
           <section class="card">
-            <h2>Device Share</h2>
+            <div class="card-header">
+              <h2>Device Share</h2>
+              <button type="button" class="data-btn" data-api="/api/pie">Data</button>
+            </div>
             <div class="chart-container"><canvas id="pieChart"></canvas></div>
           </section>
         </div>
@@ -84,20 +96,26 @@
       <div class="page" data-page="performance">
         <div class="grid">
           <section class="card wide">
-            <h2>Performance</h2>
+            <div class="card-header">
+              <h2>Performance</h2>
+              <button type="button" class="data-btn" data-api="/api/scatter">Data</button>
+            </div>
             <div class="chart-container"><canvas id="scatterChart"></canvas></div>
           </section>
 
           <section class="card wide">
             <div class="card-header">
               <h2>Token Usage</h2>
-              <select id="tokenRange" class="range-select" aria-label="Time range">
-                <option value="7d" selected>7 days</option>
-                <option value="14d">14 days</option>
-                <option value="28d">28 days</option>
-                <option value="1y">1 year</option>
-                <option value="all">All</option>
-              </select>
+              <div class="controls">
+                <select id="tokenRange" class="range-select" aria-label="Time range">
+                  <option value="7d" selected>7 days</option>
+                  <option value="14d">14 days</option>
+                  <option value="28d">28 days</option>
+                  <option value="1y">1 year</option>
+                  <option value="all">All</option>
+                </select>
+                <button type="button" class="data-btn" data-api="/api/tokens" data-range="tokenRange">Data</button>
+              </div>
             </div>
             <div class="chart-container"><canvas id="tokenChart"></canvas></div>
           </section>

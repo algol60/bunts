@@ -100,6 +100,22 @@ body {
   filter: brightness(1.1);
 }
 
+.data-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #333);
+  background: var(--select-bg, #232937);
+  color: var(--text, #e6e9f0);
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.data-btn:hover {
+  filter: brightness(1.2);
+}
+
 .switch {
   position: relative;
   display: inline-block;
