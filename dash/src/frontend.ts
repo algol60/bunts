@@ -14,7 +14,7 @@ import {
   Tooltip,
   Legend,
   type ChartConfiguration,
-} from 'chart.js';
+} from 'chart.js'
 
 Chart.register(
   LineController,
@@ -30,9 +30,9 @@ Chart.register(
   Filler,
   Tooltip,
   Legend
-);
+)
 
-const BASE = 0x2a2f3a;
+const BASE = 0x2a2f3a
 const PALETTE = [
   '#0a84ff',
   '#ff2d55',
@@ -40,18 +40,18 @@ const PALETTE = [
   '#34c759',
   '#bf5af2',
   '#ffd60a',
-];
+]
 
 function axisColor() {
   return document.getElementById('theme')?.getAttribute('href')?.includes('dark')
     ? '#8b93a7'
-    : '#555';
+    : '#555'
 }
 
 function gridColor() {
   return document.getElementById('theme')?.getAttribute('href')?.includes('dark')
     ? 'rgba(255,255,255,0.06)'
-    : 'rgba(0,0,0,0.08)';
+    : 'rgba(0,0,0,0.08)'
 }
 
 function commonOptions() {
@@ -72,26 +72,26 @@ function commonOptions() {
         grid: { color: gridColor() },
       },
     },
-  } as const;
+  } as const
 }
 
 async function getJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  return res.json();
+  const res = await fetch(url)
+  return res.json()
 }
 
 function createChart(id: string, config: ChartConfiguration) {
-  const canvas = document.getElementById(id) as HTMLCanvasElement;
-  Chart.getChart(canvas)?.destroy();
-  return new Chart(canvas, config);
+  const canvas = document.getElementById(id) as HTMLCanvasElement
+  Chart.getChart(canvas)?.destroy()
+  return new Chart(canvas, config)
 }
 
 async function loadLineChart(range: string) {
   const data = await getJSON<{
-    range: string;
-    labels: string[];
-    datasets: { label: string; data: number[] }[];
-  }>(`/api/line?range=${range}`);
+    range: string
+    labels: string[]
+    datasets: { label: string; data: number[] }[]
+  }>(`/api/line?range=${range}`)
 
   createChart('lineChart', {
     type: 'line',
@@ -106,14 +106,14 @@ async function loadLineChart(range: string) {
       })),
     },
     options: commonOptions(),
-  });
+  })
 }
 
 async function loadBarChart() {
   const data = await getJSON<{
-    labels: string[];
-    datasets: { label: string; data: number[] }[];
-  }>('/api/bar');
+    labels: string[]
+    datasets: { label: string; data: number[] }[]
+  }>('/api/bar')
 
   createChart('barChart', {
     type: 'bar',
@@ -127,14 +127,14 @@ async function loadBarChart() {
       })),
     },
     options: commonOptions(),
-  });
+  })
 }
 
 async function loadPieChart() {
   const data = await getJSON<{
-    labels: string[];
-    data: number[];
-  }>('/api/pie');
+    labels: string[]
+    data: number[]
+  }>('/api/pie')
 
   createChart('pieChart', {
     type: 'pie',
@@ -156,15 +156,15 @@ async function loadPieChart() {
         legend: { labels: { color: axisColor() } },
       },
     } as const,
-  });
+  })
 }
 
 async function loadAreaChart(range: string) {
   const data = await getJSON<{
-    range: string;
-    labels: string[];
-    datasets: { label: string; data: number[] }[];
-  }>(`/api/area?range=${range}`);
+    range: string
+    labels: string[]
+    datasets: { label: string; data: number[] }[]
+  }>(`/api/area?range=${range}`)
 
   createChart('areaChart', {
     type: 'line',
@@ -180,14 +180,14 @@ async function loadAreaChart(range: string) {
       })),
     },
     options: commonOptions(),
-  });
+  })
 }
 
 async function loadScatterChart() {
   const data = await getJSON<{
-    label: string;
-    data: { x: number; y: number }[];
-  }>('/api/scatter');
+    label: string
+    data: { x: number; y: number }[]
+  }>('/api/scatter')
 
   createChart('scatterChart', {
     type: 'scatter',
@@ -202,19 +202,19 @@ async function loadScatterChart() {
       ],
     },
     options: commonOptions(),
-  });
+  })
 }
 
 async function loadTokenChart(range: string) {
   const data = await getJSON<{
-    range: string;
-    labels: string[];
-    datasets: { label: string; data: (number | null)[] }[];
-  }>(`/api/tokens?range=${range}`);
+    range: string
+    labels: string[]
+    datasets: { label: string; data: (number | null)[] }[]
+  }>(`/api/tokens?range=${range}`)
 
-  const opts = commonOptions();
-  const barColors = [PALETTE[0] + 'cc', PALETTE[2] + 'cc'];
-  const barBorders = [PALETTE[0], PALETTE[2]];
+  const opts = commonOptions()
+  const barColors = [PALETTE[0] + 'cc', PALETTE[2] + 'cc']
+  const barBorders = [PALETTE[0], PALETTE[2]]
 
   createChart('tokenChart', {
     type: 'bar',
@@ -261,13 +261,13 @@ async function loadTokenChart(range: string) {
         },
       },
     },
-  });
+  })
 }
 
 async function loadToolChart(range: string) {
   const data = await getJSON<{ labels: string[]; data: number[] }>(
     `/api/tool-usage?range=${range}`
-  );
+  )
 
   createChart('toolChart', {
     type: 'bar',
@@ -290,26 +290,26 @@ async function loadToolChart(range: string) {
         tooltip: {
           callbacks: {
             afterLabel: (context) => {
-              const total = data.data.reduce((sum, v) => sum + v, 0);
-              const value = data.data[context.dataIndex];
-              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-              return `${pct}% of total`;
+              const total = data.data.reduce((sum, v) => sum + v, 0)
+              const value = data.data[context.dataIndex]
+              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
+              return `${pct}% of total`
             },
           },
         },
       },
     },
-  });
+  })
 }
 
-type PageName = 'revenue' | 'audience' | 'performance';
+type PageName = 'revenue' | 'audience' | 'performance'
 
 async function loadSessionCount(range: string) {
   const data = await getJSON<{ range: string; count: number }>(
     `/api/session-count?range=${range}`
-  );
-  const el = document.getElementById('sessionCount');
-  if (el) el.textContent = data.count.toLocaleString();
+  )
+  const el = document.getElementById('sessionCount')
+  if (el) el.textContent = data.count.toLocaleString()
 }
 
 const PAGES: Record<PageName, () => Promise<void>> = {
@@ -318,120 +318,120 @@ const PAGES: Record<PageName, () => Promise<void>> = {
       loadLineChart(rangeValue()),
       loadBarChart(),
       loadSessionCount(rangeValue()),
-    ]);
+    ])
   },
   audience: async () => {
     await Promise.all([
       loadAreaChart(rangeValue()),
       loadPieChart(),
-    ]);
+    ])
   },
   performance: async () => {
     await Promise.all([
       loadScatterChart(),
       loadTokenChart(rangeValue()),
       loadToolChart(rangeValue()),
-    ]);
+    ])
   },
-};
+}
 
-let currentPage: PageName = 'revenue';
-let loading = false;
+let currentPage: PageName = 'revenue'
+let loading = false
 
 function rangeValue(): string {
-  return (document.getElementById('globalRange') as HTMLSelectElement).value;
+  return (document.getElementById('globalRange') as HTMLSelectElement).value
 }
 
 async function downloadChartData(api: string, rangeId: string | null) {
   const url = rangeId
     ? `${api}?range=${encodeURIComponent(rangeValue())}`
-    : api;
-  const res = await fetch(url);
-  const blob = await res.blob();
-  const url2 = URL.createObjectURL(blob);
-  const name = api.split('/').pop() as string;
-  const when = new Date().toISOString().slice(0, 10);
-  const a = document.createElement('a');
-  a.href = url2;
-  a.download = `${name}-chart-data-${when}.json`;
-  a.click();
-  URL.revokeObjectURL(url2);
+    : api
+  const res = await fetch(url)
+  const blob = await res.blob()
+  const url2 = URL.createObjectURL(blob)
+  const name = api.split('/').pop() as string
+  const when = new Date().toISOString().slice(0, 10)
+  const a = document.createElement('a')
+  a.href = url2
+  a.download = `${name}-chart-data-${when}.json`
+  a.click()
+  URL.revokeObjectURL(url2)
 }
 
 export async function loadAllCharts() {
-  if (loading) return;
-  loading = true;
+  if (loading) return
+  loading = true
   try {
-    await PAGES[currentPage]();
+    await PAGES[currentPage]()
   } finally {
-    loading = false;
+    loading = false
   }
 }
 
 async function loadPage(name: PageName) {
   document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach((link) => {
-    link.classList.toggle('active', link.dataset.page === name);
-  });
+    link.classList.toggle('active', link.dataset.page === name)
+  })
   document.querySelectorAll<HTMLElement>('.page').forEach((page) => {
-    page.classList.toggle('active', page.dataset.page === name);
-  });
-  currentPage = name;
-  await loadAllCharts();
+    page.classList.toggle('active', page.dataset.page === name)
+  })
+  currentPage = name
+  await loadAllCharts()
 }
 
 declare global {
   interface Window {
-    loadAllCharts: typeof loadAllCharts;
-    updateChartsForTheme: () => void;
+    loadAllCharts: typeof loadAllCharts
+    updateChartsForTheme: () => void
   }
 }
 
-window.loadAllCharts = loadAllCharts;
+window.loadAllCharts = loadAllCharts
 window.updateChartsForTheme = () => {
-  loadAllCharts();
-};
+  loadAllCharts()
+}
 
-const themeLink = document.getElementById('theme') as HTMLLinkElement;
-const themeToggle = document.getElementById('themeToggle') as HTMLInputElement;
-const themeLabel = document.getElementById('themeLabel') as HTMLSpanElement;
+const themeLink = document.getElementById('theme') as HTMLLinkElement
+const themeToggle = document.getElementById('themeToggle') as HTMLInputElement
+const themeLabel = document.getElementById('themeLabel') as HTMLSpanElement
 
-const savedTheme = localStorage.getItem('theme');
+const savedTheme = localStorage.getItem('theme')
 if (savedTheme === 'light') {
-  themeToggle.checked = false;
-  themeLink.setAttribute('href', '/theme-light.css');
-  themeLabel.textContent = 'Light';
+  themeToggle.checked = false
+  themeLink.setAttribute('href', '/theme-light.css')
+  themeLabel.textContent = 'Light'
 }
 
 themeToggle.addEventListener('change', () => {
-  const dark = themeToggle.checked;
-  themeLink.setAttribute('href', dark ? '/theme-dark.css' : '/theme-light.css');
-  themeLabel.textContent = dark ? 'Dark' : 'Light';
-  localStorage.setItem('theme', dark ? 'dark' : 'light');
-  window.updateChartsForTheme();
-});
+  const dark = themeToggle.checked
+  themeLink.setAttribute('href', dark ? '/theme-dark.css' : '/theme-light.css')
+  themeLabel.textContent = dark ? 'Dark' : 'Light'
+  localStorage.setItem('theme', dark ? 'dark' : 'light')
+  window.updateChartsForTheme()
+})
 
 document.getElementById('refresh')?.addEventListener('click', () => {
-  loadAllCharts();
-});
+  loadAllCharts()
+})
 
 document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach((link) => {
   link.addEventListener('click', (event) => {
-    event.preventDefault();
-    const name = link.dataset.page as PageName;
+    event.preventDefault()
+    const name = link.dataset.page as PageName
     if (name && name !== currentPage) {
-      loadPage(name);
+      loadPage(name)
     }
-  });
-});
+  })
+})
 
-const globalRange = document.getElementById('globalRange') as HTMLSelectElement;
-globalRange.addEventListener('change', () => loadAllCharts());
+const globalRange = document.getElementById('globalRange') as HTMLSelectElement
+globalRange.addEventListener('change', () => loadAllCharts())
 
 document.querySelectorAll<HTMLButtonElement>('[data-api]').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const api = btn.dataset.api as string;
-    downloadChartData(api, btn.dataset.range ?? null);
-  });
-});
+    const api = btn.dataset.api as string
+    downloadChartData(api, btn.dataset.range ?? null)
+  })
+})
 
-loadPage(currentPage);
+loadPage(currentPage)
