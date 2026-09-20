@@ -80,7 +80,8 @@ elements, `Filler`, `Tooltip`, `Legend`.
 ### 3. HTML card (`public/index.html`)
 
 Add a `<section class="card">` inside the `.page` section that should hold the
-chart. `wide` cards span the full grid width; omit it for half-width:
+chart. `wide` cards span the full grid width; `fit` cards shrink to their
+content; omit both for half-width:
 
 ```html
 <section class="card wide">

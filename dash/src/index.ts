@@ -184,6 +184,24 @@ function loadTokenData(range: string, days: number | null): TokenResponse {
 }
 
 const router: Record<string, (params: URLSearchParams) => unknown> = {
+  '/api/session-count': (params) => {
+    const range = params.get('range') ?? '7d';
+    const days = range === 'all' ? null : daysForRange(range);
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true });
+    try {
+      const where = days === null ? '' : 'WHERE time_created >= ?';
+      const filter: number[] =
+        days === null ? [] : [Date.now() - days * 86_400_000];
+      const row = db
+        .query<{ count: number }, number[]>(
+          `SELECT COUNT(*) AS count FROM session ${where}`
+        )
+        .get(...filter);
+      return { range, count: row?.count ?? 0 };
+    } finally {
+      db.close();
+    }
+  },
   '/api/line': (params) => {
     const days = daysForRange(params.get('range'));
     const revenue = sliceSeries(generateSeries(MAX_DAYS, 55, 18, 0), days);

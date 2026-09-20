@@ -47,6 +47,14 @@
     <main>
       <div class="page active" data-page="revenue">
         <div class="grid">
+          <section class="card fit">
+            <div class="card-header">
+              <h2>Sessions</h2>
+              <button type="button" class="data-btn" data-api="/api/session-count" data-range="globalRange">Data</button>
+            </div>
+            <div class="count-value" id="sessionCount">&ndash;</div>
+          </section>
+
           <section class="card wide">
             <div class="card-header">
               <h2>Revenue Trend</h2>

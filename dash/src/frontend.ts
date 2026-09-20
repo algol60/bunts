@@ -292,11 +292,20 @@ async function loadToolChart(range: string) {
 
 type PageName = 'revenue' | 'audience' | 'performance';
 
+async function loadSessionCount(range: string) {
+  const data = await getJSON<{ range: string; count: number }>(
+    `/api/session-count?range=${range}`
+  );
+  const el = document.getElementById('sessionCount');
+  if (el) el.textContent = data.count.toLocaleString();
+}
+
 const PAGES: Record<PageName, () => Promise<void>> = {
   revenue: async () => {
     await Promise.all([
       loadLineChart(rangeValue()),
       loadBarChart(),
+      loadSessionCount(rangeValue()),
     ]);
   },
   audience: async () => {
