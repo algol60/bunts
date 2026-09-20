@@ -14,7 +14,7 @@ import {
   Tooltip,
   Legend,
   type ChartConfiguration,
-} from "chart.js";
+} from 'chart.js';
 
 Chart.register(
   LineController,
@@ -34,24 +34,24 @@ Chart.register(
 
 const BASE = 0x2a2f3a;
 const PALETTE = [
-  "#0a84ff",
-  "#ff2d55",
-  "#ff9f0a",
-  "#34c759",
-  "#bf5af2",
-  "#ffd60a",
+  '#0a84ff',
+  '#ff2d55',
+  '#ff9f0a',
+  '#34c759',
+  '#bf5af2',
+  '#ffd60a',
 ];
 
 function axisColor() {
-  return document.getElementById("theme")?.getAttribute("href")?.includes("dark")
-    ? "#8b93a7"
-    : "#555";
+  return document.getElementById('theme')?.getAttribute('href')?.includes('dark')
+    ? '#8b93a7'
+    : '#555';
 }
 
 function gridColor() {
-  return document.getElementById("theme")?.getAttribute("href")?.includes("dark")
-    ? "rgba(255,255,255,0.06)"
-    : "rgba(0,0,0,0.08)";
+  return document.getElementById('theme')?.getAttribute('href')?.includes('dark')
+    ? 'rgba(255,255,255,0.06)'
+    : 'rgba(0,0,0,0.08)';
 }
 
 function commonOptions() {
@@ -93,14 +93,14 @@ async function loadLineChart(range: string) {
     datasets: { label: string; data: number[] }[];
   }>(`/api/line?range=${range}`);
 
-  createChart("lineChart", {
-    type: "line",
+  createChart('lineChart', {
+    type: 'line',
     data: {
       labels: data.labels,
       datasets: data.datasets.map((d, i) => ({
         ...d,
         borderColor: PALETTE[i],
-        backgroundColor: PALETTE[i] + "33",
+        backgroundColor: PALETTE[i] + '33',
         tension: 0.4,
         pointRadius: 4,
       })),
@@ -113,15 +113,15 @@ async function loadBarChart() {
   const data = await getJSON<{
     labels: string[];
     datasets: { label: string; data: number[] }[];
-  }>("/api/bar");
+  }>('/api/bar');
 
-  createChart("barChart", {
-    type: "bar",
+  createChart('barChart', {
+    type: 'bar',
     data: {
       labels: data.labels,
       datasets: data.datasets.map((d, i) => ({
         ...d,
-        backgroundColor: [PALETTE[0] + "cc", PALETTE[2] + "cc"],
+        backgroundColor: [PALETTE[0] + 'cc', PALETTE[2] + 'cc'],
         borderColor: [PALETTE[0], PALETTE[2]],
         borderWidth: 1,
       })),
@@ -134,17 +134,17 @@ async function loadPieChart() {
   const data = await getJSON<{
     labels: string[];
     data: number[];
-  }>("/api/pie");
+  }>('/api/pie');
 
-  createChart("pieChart", {
-    type: "pie",
+  createChart('pieChart', {
+    type: 'pie',
     data: {
       labels: data.labels,
       datasets: [
         {
           data: data.data,
           backgroundColor: PALETTE.slice(0, data.labels.length),
-          borderColor: "#1e222c",
+          borderColor: '#1e222c',
           borderWidth: 2,
         },
       ],
@@ -166,14 +166,14 @@ async function loadAreaChart(range: string) {
     datasets: { label: string; data: number[] }[];
   }>(`/api/area?range=${range}`);
 
-  createChart("areaChart", {
-    type: "line",
+  createChart('areaChart', {
+    type: 'line',
     data: {
       labels: data.labels,
       datasets: data.datasets.map((d, i) => ({
         ...d,
         borderColor: PALETTE[i + 3],
-        backgroundColor: PALETTE[i + 3] + "4d",
+        backgroundColor: PALETTE[i + 3] + '4d',
         fill: true,
         tension: 0.35,
         pointRadius: 3,
@@ -187,16 +187,16 @@ async function loadScatterChart() {
   const data = await getJSON<{
     label: string;
     data: { x: number; y: number }[];
-  }>("/api/scatter");
+  }>('/api/scatter');
 
-  createChart("scatterChart", {
-    type: "scatter",
+  createChart('scatterChart', {
+    type: 'scatter',
     data: {
       datasets: [
         {
           label: data.label,
           data: data.data,
-          backgroundColor: PALETTE[0] + "aa",
+          backgroundColor: PALETTE[0] + 'aa',
           pointRadius: 6,
         },
       ],
@@ -213,11 +213,11 @@ async function loadTokenChart(range: string) {
   }>(`/api/tokens?range=${range}`);
 
   const opts = commonOptions();
-  const barColors = [PALETTE[0] + "cc", PALETTE[2] + "cc"];
+  const barColors = [PALETTE[0] + 'cc', PALETTE[2] + 'cc'];
   const barBorders = [PALETTE[0], PALETTE[2]];
 
-  createChart("tokenChart", {
-    type: "bar",
+  createChart('tokenChart', {
+    type: 'bar',
     data: {
       labels: data.labels,
       datasets: [
@@ -237,9 +237,9 @@ async function loadTokenChart(range: string) {
         },
         {
           label: data.datasets[2].label,
-          type: "line",
+          type: 'line',
           data: data.datasets[2].data,
-          yAxisID: "y1",
+          yAxisID: 'y1',
           borderColor: PALETTE[1],
           backgroundColor: PALETTE[1],
           pointRadius: 3,
@@ -253,41 +253,41 @@ async function loadTokenChart(range: string) {
       scales: {
         ...opts.scales,
         y1: {
-          position: "right",
+          position: 'right',
           beginAtZero: true,
           ticks: { color: axisColor() },
           grid: { drawOnChartArea: false, color: gridColor() },
-          title: { display: true, text: "Ratio", color: axisColor() },
+          title: { display: true, text: 'Ratio', color: axisColor() },
         },
       },
     },
   });
 }
 
-type PageName = "revenue" | "audience" | "performance";
+type PageName = 'revenue' | 'audience' | 'performance';
 
 const PAGES: Record<PageName, () => Promise<void>> = {
   revenue: async () => {
     await Promise.all([
-      loadLineChart(selectedRange("lineRange")),
+      loadLineChart(selectedRange('lineRange')),
       loadBarChart(),
     ]);
   },
   audience: async () => {
     await Promise.all([
-      loadAreaChart(selectedRange("areaRange")),
+      loadAreaChart(selectedRange('areaRange')),
       loadPieChart(),
     ]);
   },
   performance: async () => {
     await Promise.all([
       loadScatterChart(),
-      loadTokenChart(selectedRange("tokenRange")),
+      loadTokenChart(selectedRange('tokenRange')),
     ]);
   },
 };
 
-let currentPage: PageName = "revenue";
+let currentPage: PageName = 'revenue';
 let loading = false;
 
 function selectedRange(id: string): string {
@@ -301,9 +301,9 @@ async function downloadChartData(api: string, rangeId: string | null) {
   const res = await fetch(url);
   const blob = await res.blob();
   const url2 = URL.createObjectURL(blob);
-  const name = api.split("/").pop() as string;
+  const name = api.split('/').pop() as string;
   const when = new Date().toISOString().slice(0, 10);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url2;
   a.download = `${name}-chart-data-${when}.json`;
   a.click();
@@ -321,11 +321,11 @@ export async function loadAllCharts() {
 }
 
 async function loadPage(name: PageName) {
-  document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
-    link.classList.toggle("active", link.dataset.page === name);
+  document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach((link) => {
+    link.classList.toggle('active', link.dataset.page === name);
   });
-  document.querySelectorAll<HTMLElement>(".page").forEach((page) => {
-    page.classList.toggle("active", page.dataset.page === name);
+  document.querySelectorAll<HTMLElement>('.page').forEach((page) => {
+    page.classList.toggle('active', page.dataset.page === name);
   });
   currentPage = name;
   await loadAllCharts();
@@ -343,31 +343,31 @@ window.updateChartsForTheme = () => {
   loadAllCharts();
 };
 
-const themeLink = document.getElementById("theme") as HTMLLinkElement;
-const themeToggle = document.getElementById("themeToggle") as HTMLInputElement;
-const themeLabel = document.getElementById("themeLabel") as HTMLSpanElement;
+const themeLink = document.getElementById('theme') as HTMLLinkElement;
+const themeToggle = document.getElementById('themeToggle') as HTMLInputElement;
+const themeLabel = document.getElementById('themeLabel') as HTMLSpanElement;
 
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "light") {
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') {
   themeToggle.checked = false;
-  themeLink.setAttribute("href", "/theme-light.css");
-  themeLabel.textContent = "Light";
+  themeLink.setAttribute('href', '/theme-light.css');
+  themeLabel.textContent = 'Light';
 }
 
-themeToggle.addEventListener("change", () => {
+themeToggle.addEventListener('change', () => {
   const dark = themeToggle.checked;
-  themeLink.setAttribute("href", dark ? "/theme-dark.css" : "/theme-light.css");
-  themeLabel.textContent = dark ? "Dark" : "Light";
-  localStorage.setItem("theme", dark ? "dark" : "light");
+  themeLink.setAttribute('href', dark ? '/theme-dark.css' : '/theme-light.css');
+  themeLabel.textContent = dark ? 'Dark' : 'Light';
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
   window.updateChartsForTheme();
 });
 
-document.getElementById("refresh")?.addEventListener("click", () => {
+document.getElementById('refresh')?.addEventListener('click', () => {
   loadAllCharts();
 });
 
-document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
-  link.addEventListener("click", (event) => {
+document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach((link) => {
+  link.addEventListener('click', (event) => {
     event.preventDefault();
     const name = link.dataset.page as PageName;
     if (name && name !== currentPage) {
@@ -376,17 +376,17 @@ document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
   });
 });
 
-const lineRange = document.getElementById("lineRange") as HTMLSelectElement;
-lineRange.addEventListener("change", () => loadLineChart(lineRange.value));
+const lineRange = document.getElementById('lineRange') as HTMLSelectElement;
+lineRange.addEventListener('change', () => loadLineChart(lineRange.value));
 
-const areaRange = document.getElementById("areaRange") as HTMLSelectElement;
-areaRange.addEventListener("change", () => loadAreaChart(areaRange.value));
+const areaRange = document.getElementById('areaRange') as HTMLSelectElement;
+areaRange.addEventListener('change', () => loadAreaChart(areaRange.value));
 
-const tokenRange = document.getElementById("tokenRange") as HTMLSelectElement;
-tokenRange.addEventListener("change", () => loadTokenChart(tokenRange.value));
+const tokenRange = document.getElementById('tokenRange') as HTMLSelectElement;
+tokenRange.addEventListener('change', () => loadTokenChart(tokenRange.value));
 
-document.querySelectorAll<HTMLButtonElement>("[data-api]").forEach((btn) => {
-  btn.addEventListener("click", () => {
+document.querySelectorAll<HTMLButtonElement>('[data-api]').forEach((btn) => {
+  btn.addEventListener('click', () => {
     const api = btn.dataset.api as string;
     downloadChartData(api, btn.dataset.range ?? null);
   });

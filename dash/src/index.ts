@@ -1,31 +1,31 @@
-import { readFileSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
-import { Database } from "bun:sqlite";
+import { readFileSync } from 'fs';
+import { homedir } from 'os';
+import { join } from 'path';
+import { Database } from 'bun:sqlite';
 
 const PORT = 3000;
-const PUBLIC_DIR = join(import.meta.dir, "..", "public");
-const OPENCODE_DB = join(homedir(), ".local", "share", "opencode", "opencode.db");
+const PUBLIC_DIR = join(import.meta.dir, '..', 'public');
+const OPENCODE_DB = join(homedir(), '.local', 'share', 'opencode', 'opencode.db');
 
 const MIME: Record<string, string> = {
-  ".html": "text/html",
-  ".css": "text/css",
-  ".js": "text/javascript",
-  ".json": "application/json",
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'text/javascript',
+  '.json': 'application/json',
 };
 
 const MAX_DAYS = 730;
 
 const DAYS_PER_RANGE: Record<string, number> = {
-  "7d": 7,
-  "14d": 14,
-  "28d": 28,
-  "1y": 365,
+  '7d': 7,
+  '14d': 14,
+  '28d': 28,
+  '1y': 365,
   all: MAX_DAYS,
 };
 
 function daysForRange(range: string | null): number {
-  return DAYS_PER_RANGE[range ?? "7d"] ?? 7;
+  return DAYS_PER_RANGE[range ?? '7d'] ?? 7;
 }
 
 interface Series {
@@ -47,7 +47,7 @@ function generateSeries(
     const d = new Date(today);
     d.setDate(d.getDate() - (totalDays - 1 - i));
     labels.push(
-      d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     );
     const wave =
       base +
@@ -91,15 +91,15 @@ interface TokenResponse {
 }
 
 function localDayKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
     d.getDate()
-  ).padStart(2, "0")}`;
+  ).padStart(2, '0')}`;
 }
 
 function loadTokenData(range: string, days: number | null): TokenResponse {
   const db = new Database(OPENCODE_DB, { readonly: true });
   try {
-    const where = days === null ? "" : "WHERE time_created >= ?";
+    const where = days === null ? '' : 'WHERE time_created >= ?';
     const filter: number[] =
       days === null ? [] : [Date.now() - days * 86_400_000];
     const rows = db
@@ -171,9 +171,9 @@ function loadTokenData(range: string, days: number | null): TokenResponse {
       range,
       labels,
       datasets: [
-        { label: "Input Tokens", data: inputTokens },
-        { label: "Output Tokens", data: outputTokens },
-        { label: "Input/Output Ratio", data: ratio },
+        { label: 'Input Tokens', data: inputTokens },
+        { label: 'Output Tokens', data: outputTokens },
+        { label: 'Input/Output Ratio', data: ratio },
       ],
     };
   } finally {
@@ -182,50 +182,50 @@ function loadTokenData(range: string, days: number | null): TokenResponse {
 }
 
 const router: Record<string, (params: URLSearchParams) => unknown> = {
-  "/api/line": (params) => {
-    const days = daysForRange(params.get("range"));
+  '/api/line': (params) => {
+    const days = daysForRange(params.get('range'));
     const revenue = sliceSeries(generateSeries(MAX_DAYS, 55, 18, 0), days);
     const expenses = sliceSeries(generateSeries(MAX_DAYS, 35, 12, 9), days);
     return {
-      range: params.get("range") ?? "7d",
+      range: params.get('range') ?? '7d',
       labels: revenue.labels,
       datasets: [
-        { label: "Revenue", data: revenue.data },
-        { label: "Expenses", data: expenses.data },
+        { label: 'Revenue', data: revenue.data },
+        { label: 'Expenses', data: expenses.data },
       ],
     };
   },
-  "/api/bar": (params) => ({
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  '/api/bar': (params) => ({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
-      { label: "Sales", data: [120, 190, 80, 150, 220, 300, 170] },
-      { label: "Returns", data: [10, 25, 5, 15, 30, 40, 12] },
+      { label: 'Sales', data: [120, 190, 80, 150, 220, 300, 170] },
+      { label: 'Returns', data: [10, 25, 5, 15, 30, 40, 12] },
     ],
   }),
-  "/api/pie": (params) => ({
-    labels: ["Desktop", "Mobile", "Tablet", "Other"],
+  '/api/pie': (params) => ({
+    labels: ['Desktop', 'Mobile', 'Tablet', 'Other'],
     data: [45, 35, 15, 5],
   }),
-  "/api/area": (params) => {
-    const days = daysForRange(params.get("range"));
+  '/api/area': (params) => {
+    const days = daysForRange(params.get('range'));
     const active = sliceSeries(generateSeries(MAX_DAYS, 70, 22, 0), days);
     const fresh = sliceSeries(generateSeries(MAX_DAYS, 35, 10, 5), days);
     return {
-      range: params.get("range") ?? "7d",
+      range: params.get('range') ?? '7d',
       labels: active.labels,
       datasets: [
-        { label: "Active Users", data: active.data },
-        { label: "New Users", data: fresh.data },
+        { label: 'Active Users', data: active.data },
+        { label: 'New Users', data: fresh.data },
       ],
     };
   },
-  "/api/scatter": (params) => ({
-    label: "Performance",
+  '/api/scatter': (params) => ({
+    label: 'Performance',
     data: generateScatterData(30),
   }),
-  "/api/tokens": (params) => {
-    const range = params.get("range") ?? "7d";
-    return loadTokenData(range, range === "all" ? null : daysForRange(range));
+  '/api/tokens': (params) => {
+    const range = params.get('range') ?? '7d';
+    return loadTokenData(range, range === 'all' ? null : daysForRange(range));
   },
 };
 
@@ -235,9 +235,9 @@ Bun.serve({
     const url = new URL(req.url);
     const { pathname } = url;
 
-    if (pathname === "/" || pathname === "/index.html") {
-      const html = readFileSync(join(PUBLIC_DIR, "index.html"), "utf-8");
-      return new Response(html, { headers: { "Content-Type": "text/html" } });
+    if (pathname === '/' || pathname === '/index.html') {
+      const html = readFileSync(join(PUBLIC_DIR, 'index.html'), 'utf-8');
+      return new Response(html, { headers: { 'Content-Type': 'text/html' } });
     }
 
     const handler = router[pathname];
@@ -245,23 +245,23 @@ Bun.serve({
       return Response.json(handler(url.searchParams));
     }
 
-    const ext = pathname.substring(pathname.lastIndexOf("."));
+    const ext = pathname.substring(pathname.lastIndexOf('.'));
     const mime = MIME[ext];
     if (mime) {
       try {
         const file = readFileSync(join(PUBLIC_DIR, pathname));
         return new Response(file, {
           headers: {
-            "Content-Type": mime,
-            "Cache-Control": "no-cache",
+            'Content-Type': mime,
+            'Cache-Control': 'no-cache',
           },
         });
       } catch {
-        return new Response("Not Found", { status: 404 });
+        return new Response('Not Found', { status: 404 });
       }
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response('Not Found', { status: 404 });
   },
 });
 
