@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link
+    id="theme"
+    rel="stylesheet"
+    href="/theme-dark.css"
+  />
+  <link rel="stylesheet" href="/base.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Dashboard</h1>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active" data-page="revenue">Revenue</a>
+      <a href="#" class="nav-link" data-page="audience">Audience</a>
+      <a href="#" class="nav-link" data-page="performance">Performance</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="controls">
+        <label class="switch">
+          <input id="themeToggle" type="checkbox" checked />
+          <span class="slider"></span>
+        </label>
+        <span id="themeLabel">Dark</span>
+      </div>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </aside>
+
+  <div class="content">
+    <main>
+      <div class="page active" data-page="revenue">
+        <div class="grid">
+          <section class="card wide">
+            <div class="card-header">
+              <h2>Revenue Trend</h2>
+              <select id="lineRange" class="range-select" aria-label="Time range">
+                <option value="7d" selected>7 days</option>
+                <option value="14d">14 days</option>
+                <option value="28d">28 days</option>
+                <option value="1y">1 year</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <div class="chart-container"><canvas id="lineChart"></canvas></div>
+          </section>
+
+          <section class="card wide">
+            <h2>Weekly Sales</h2>
+            <div class="chart-container"><canvas id="barChart"></canvas></div>
+          </section>
+        </div>
+      </div>
+
+      <div class="page" data-page="audience">
+        <div class="grid">
+          <section class="card wide">
+            <div class="card-header">
+              <h2>User Growth</h2>
+              <select id="areaRange" class="range-select" aria-label="Time range">
+                <option value="7d" selected>7 days</option>
+                <option value="14d">14 days</option>
+                <option value="28d">28 days</option>
+                <option value="1y">1 year</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <div class="chart-container"><canvas id="areaChart"></canvas></div>
+          </section>
+
+          <section class="card">
+            <h2>Device Share</h2>
+            <div class="chart-container"><canvas id="pieChart"></canvas></div>
+          </section>
+        </div>
+      </div>
+
+      <div class="page" data-page="performance">
+        <div class="grid">
+          <section class="card wide">
+            <h2>Performance</h2>
+            <div class="chart-container"><canvas id="scatterChart"></canvas></div>
+          </section>
+
+          <section class="card wide">
+            <div class="card-header">
+              <h2>Token Usage</h2>
+              <select id="tokenRange" class="range-select" aria-label="Time range">
+                <option value="7d" selected>7 days</option>
+                <option value="14d">14 days</option>
+                <option value="28d">28 days</option>
+                <option value="1y">1 year</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <div class="chart-container"><canvas id="tokenChart"></canvas></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

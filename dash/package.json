@@ -1,0 +1,16 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/frontend.ts --outfile public/app.js --minify",
+    "dev": "bun run build && bun run --watch src/index.ts",
+    "start": "bun run build && bun run src/index.ts"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2"
+  }
+}

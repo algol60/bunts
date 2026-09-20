@@ -1,0 +1,23 @@
+:root {
+  --bg: #10131a;
+  --card-bg: #1b202b;
+  --text: #e6e9f0;
+  --muted: #8b93a7;
+  --border-color: #2a3040;
+  --accent: #4fc3f7;
+  --slider-off: #3a4152;
+  --select-bg: #232937;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sidebar {
+  background: var(--card-bg);
+}
+
+.card {
+  background: var(--card-bg);
+}
