@@ -86,33 +86,27 @@ chart. `wide` cards span the full grid width; omit it for half-width:
 <section class="card wide">
   <div class="card-header">
     <h2>My Chart</h2>
-    <div class="controls">
-      <select id="myRange" class="range-select" aria-label="Time range">
-        <option value="7d" selected>7 days</option>
-        <option value="14d">14 days</option>
-        <option value="28d">28 days</option>
-        <option value="1y">1 year</option>
-        <option value="all">All</option>
-      </select>
-      <button type="button" class="data-btn" data-api="/api/mychart" data-range="myRange">Data</button>
-    </div>
+    <button type="button" class="data-btn" data-api="/api/mychart" data-range="globalRange">Data</button>
   </div>
   <div class="chart-container"><canvas id="myChart"></canvas></div>
 </section>
 ```
 
 - The `data-btn` `downloadChartData` wiring is automatic once the button has a
-  `data-api` attribute (and `data-range` if it reads a select).
-- Omit the `<select>` if the chart has no time range.
+  `data-api` attribute (and `data-range` if the chart reads the time range).
+- Time ranges are chosen once in the sidebar's global `#globalRange` select and
+  apply to every range-aware chart; there is no per-chart select.
+- Omit `data-range` if the chart has no time range.
 
 ### 4. Call the loader
 
-Add the loader either to a page function in `PAGES` (see below), or wire the
-range select directly:
+Add the loader to a page function in `PAGES` (see below), passing the global
+range via `rangeValue()`:
 
 ```ts
-const myRange = document.getElementById('myRange') as HTMLSelectElement;
-myRange.addEventListener('change', () => loadMyChart(myRange.value));
+async () => {
+  await Promise.all([loadMyChart(rangeValue())]);
+}
 ```
 
 ### 5. Build
@@ -156,10 +150,11 @@ type PageName = 'revenue' | 'audience' | 'performance' | 'mynewpage';
 const PAGES: Record<PageName, () => Promise<void>> = {
   // existing entries...
   mynewpage: async () => {
-    await Promise.all([loadMyChart(selectedRange('myRange'))]);
+    await Promise.all([loadMyChart(rangeValue())]);
   },
 };
 ```
 
 Navigation, active-link/page toggling, and refresh are handled generically by
-`loadPage`; no further wiring is needed.
+`loadPage`; no further wiring is needed. Changing the global sidebar time range
+reloads every chart on the current page.

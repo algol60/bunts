@@ -295,21 +295,21 @@ type PageName = 'revenue' | 'audience' | 'performance';
 const PAGES: Record<PageName, () => Promise<void>> = {
   revenue: async () => {
     await Promise.all([
-      loadLineChart(selectedRange('lineRange')),
+      loadLineChart(rangeValue()),
       loadBarChart(),
     ]);
   },
   audience: async () => {
     await Promise.all([
-      loadAreaChart(selectedRange('areaRange')),
+      loadAreaChart(rangeValue()),
       loadPieChart(),
     ]);
   },
   performance: async () => {
     await Promise.all([
       loadScatterChart(),
-      loadTokenChart(selectedRange('tokenRange')),
-      loadToolChart(selectedRange('toolRange')),
+      loadTokenChart(rangeValue()),
+      loadToolChart(rangeValue()),
     ]);
   },
 };
@@ -317,13 +317,13 @@ const PAGES: Record<PageName, () => Promise<void>> = {
 let currentPage: PageName = 'revenue';
 let loading = false;
 
-function selectedRange(id: string): string {
-  return (document.getElementById(id) as HTMLSelectElement).value;
+function rangeValue(): string {
+  return (document.getElementById('globalRange') as HTMLSelectElement).value;
 }
 
 async function downloadChartData(api: string, rangeId: string | null) {
   const url = rangeId
-    ? `${api}?range=${encodeURIComponent(selectedRange(rangeId))}`
+    ? `${api}?range=${encodeURIComponent(rangeValue())}`
     : api;
   const res = await fetch(url);
   const blob = await res.blob();
@@ -403,17 +403,8 @@ document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach((link) => {
   });
 });
 
-const lineRange = document.getElementById('lineRange') as HTMLSelectElement;
-lineRange.addEventListener('change', () => loadLineChart(lineRange.value));
-
-const areaRange = document.getElementById('areaRange') as HTMLSelectElement;
-areaRange.addEventListener('change', () => loadAreaChart(areaRange.value));
-
-const tokenRange = document.getElementById('tokenRange') as HTMLSelectElement;
-tokenRange.addEventListener('change', () => loadTokenChart(tokenRange.value));
-
-const toolRange = document.getElementById('toolRange') as HTMLSelectElement;
-toolRange.addEventListener('change', () => loadToolChart(toolRange.value));
+const globalRange = document.getElementById('globalRange') as HTMLSelectElement;
+globalRange.addEventListener('change', () => loadAllCharts());
 
 document.querySelectorAll<HTMLButtonElement>('[data-api]').forEach((btn) => {
   btn.addEventListener('click', () => {
