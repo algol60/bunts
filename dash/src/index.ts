@@ -97,7 +97,7 @@ function localDayKey(d: Date): string {
 }
 
 function loadTokenData(range: string, days: number | null): TokenResponse {
-  const db = new Database(OPENCODE_DB, { readonly: true });
+  const db = new Database(OPENCODE_DB, { readonly: true, strict: true });
   try {
     const where = days === null ? '' : 'WHERE time_created >= ?';
     const filter: number[] =
@@ -158,7 +158,9 @@ function loadTokenData(range: string, days: number | null): TokenResponse {
       const row = byDay.get(key);
       const input = row?.input_tokens ?? 0;
       const output = row?.output_tokens ?? 0;
-      labels.push(key.slice(5));
+      labels.push(
+        cur.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      );
       inputTokens.push(input);
       outputTokens.push(output);
       ratio.push(
@@ -226,6 +228,30 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
   '/api/tokens': (params) => {
     const range = params.get('range') ?? '7d';
     return loadTokenData(range, range === 'all' ? null : daysForRange(range));
+  },
+  '/api/tool-usage': (params) => {
+    const range = params.get('range') ?? '7d';
+    const days = range === 'all' ? null : daysForRange(range);
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true });
+    try {
+      const where =
+        days === null
+          ? `WHERE data->>'$.type' = 'tool'`
+          : `WHERE data->>'$.type' = 'tool' AND time_created >= ?`;
+      const filter: number[] = days === null ? [] : [Date.now() - days * 86_400_000];
+      const rows = db
+        .query<{ tool: string; toolcount: number }, number[]>(
+          `SELECT data->>'$.tool' AS tool, COUNT(*) AS toolcount
+           FROM part
+           ${where}
+           GROUP BY tool
+           ORDER BY toolcount DESC, tool ASC`
+        )
+        .all(...filter);
+      return { range, labels: rows.map((r) => r.tool), data: rows.map((r) => r.toolcount) };
+    } finally {
+      db.close();
+    }
   },
 };
 

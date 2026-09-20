@@ -1,5 +1,6 @@
 ## Development
 - Using bun
+- Use date format 'Mmm dd' to display dates
 
 ## Code style
 - TypeScript strict mode

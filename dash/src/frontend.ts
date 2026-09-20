@@ -264,6 +264,32 @@ async function loadTokenChart(range: string) {
   });
 }
 
+async function loadToolChart(range: string) {
+  const data = await getJSON<{ labels: string[]; data: number[] }>(
+    `/api/tool-usage?range=${range}`
+  );
+
+  createChart('toolChart', {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [
+        {
+          label: 'Usage',
+          data: data.data,
+          backgroundColor: PALETTE[0] + 'cc',
+          borderColor: PALETTE[0],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      ...commonOptions(),
+      indexAxis: 'y',
+    },
+  });
+}
+
 type PageName = 'revenue' | 'audience' | 'performance';
 
 const PAGES: Record<PageName, () => Promise<void>> = {
@@ -283,6 +309,7 @@ const PAGES: Record<PageName, () => Promise<void>> = {
     await Promise.all([
       loadScatterChart(),
       loadTokenChart(selectedRange('tokenRange')),
+      loadToolChart(selectedRange('toolRange')),
     ]);
   },
 };
@@ -384,6 +411,9 @@ areaRange.addEventListener('change', () => loadAreaChart(areaRange.value));
 
 const tokenRange = document.getElementById('tokenRange') as HTMLSelectElement;
 tokenRange.addEventListener('change', () => loadTokenChart(tokenRange.value));
+
+const toolRange = document.getElementById('toolRange') as HTMLSelectElement;
+toolRange.addEventListener('change', () => loadToolChart(toolRange.value));
 
 document.querySelectorAll<HTMLButtonElement>('[data-api]').forEach((btn) => {
   btn.addEventListener('click', () => {
