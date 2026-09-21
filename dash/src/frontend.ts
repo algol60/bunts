@@ -33,6 +33,13 @@ Chart.register(
 )
 
 const BASE = 0x2a2f3a
+const TOKEN = new URLSearchParams(window.location.search).get('token') ?? ''
+
+function withToken(url: string): string {
+  return TOKEN === ''
+    ? url
+    : `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(TOKEN)}`
+}
 const PALETTE = [
   '#0a84ff',
   '#ff2d55',
@@ -76,7 +83,7 @@ function commonOptions() {
 }
 
 async function getJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await fetch(withToken(url))
   return res.json()
 }
 
@@ -362,7 +369,7 @@ async function downloadChartData(api: string, rangeId: string | null) {
   const url = rangeId
     ? `${api}?range=${encodeURIComponent(rangeValue())}`
     : api
-  const res = await fetch(url)
+  const res = await fetch(withToken(url))
   const blob = await res.blob()
   const url2 = URL.createObjectURL(blob)
   const name = api.split('/').pop() as string

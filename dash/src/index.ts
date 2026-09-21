@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { randomBytes } from 'crypto'
 import { homedir } from 'os'
 import { join } from 'path'
 import { Database } from 'bun:sqlite'
@@ -21,6 +22,8 @@ const APP_VERSION = (
     readFileSync(join(import.meta.dir, '..', 'package.json'), 'utf-8')
   ) as { version: string }
 ).version
+
+const TOKEN = randomBytes(18).toString('hex')
 
 const MIME: Record<string, string> = {
   '.html': 'text/html',
@@ -332,6 +335,18 @@ Bun.serve({
     const url = new URL(req.url)
     const { pathname } = url
 
+    const token = url.searchParams.get('token')
+    const gated =
+      pathname === '/' ||
+      pathname === '/index.html' ||
+      pathname.startsWith('/api/')
+    if (gated && token !== TOKEN) {
+      return new Response(
+        `Unauthorized. Open the dashboard with the token URL printed at startup (http://localhost:${PORT}/?token=...)`,
+        { status: 401 }
+      )
+    }
+
     if (pathname === '/' || pathname === '/index.html') {
       const html = readFileSync(join(PUBLIC_DIR, 'index.html'), 'utf-8')
         .replace('{{VERSION}}', APP_VERSION)
@@ -363,4 +378,4 @@ Bun.serve({
   },
 })
 
-console.log(`Dashboard running at http://localhost:${PORT}`)
+console.log(`Dashboard running at http://localhost:${PORT}/?token=${TOKEN}`)
