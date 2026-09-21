@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { readFileSync } from 'fs'
 import { randomBytes } from 'crypto'
 import { homedir } from 'os'
@@ -242,7 +243,7 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
     const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
     try {
       const row = db
-        .query<{ earliest: number }>(
+        .query<{ earliest: number }, never[]>(
           'SELECT MIN(time_created) AS earliest FROM session'
         )
         .get()
