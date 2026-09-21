@@ -312,12 +312,28 @@ async function loadSessionCount(range: string) {
   if (el) el.textContent = data.count.toLocaleString()
 }
 
+async function loadMessageCount(range: string) {
+  const data = await getJSON<{ range: string; count: number }>(
+    `/api/message-count?range=${range}`
+  )
+  const el = document.getElementById('messageCount')
+  if (el) el.textContent = data.count.toLocaleString()
+}
+
+async function loadDayCount() {
+  const data = await getJSON<{ count: number }>('/api/day-count')
+  const el = document.getElementById('dayCount')
+  if (el) el.textContent = data.count.toLocaleString()
+}
+
 const PAGES: Record<PageName, () => Promise<void>> = {
   revenue: async () => {
     await Promise.all([
       loadLineChart(rangeValue()),
       loadBarChart(),
       loadSessionCount(rangeValue()),
+      loadMessageCount(rangeValue()),
+      loadDayCount(),
     ])
   },
   audience: async () => {

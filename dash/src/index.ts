@@ -3,7 +3,17 @@ import { homedir } from 'os'
 import { join } from 'path'
 import { Database } from 'bun:sqlite'
 
-const PORT = 3000
+function parsePort(args: string[]): number {
+  const i = args.indexOf('--port')
+  if (i === -1) return 3000
+  const value = Number(args[i + 1])
+  if (!Number.isInteger(value) || value < 1 || value > 65_535) {
+    throw new Error('Invalid port: ' + args[i + 1])
+  }
+  return value
+}
+
+const PORT = parsePort(Bun.argv)
 const PUBLIC_DIR = join(import.meta.dir, '..', 'public')
 const OPENCODE_DB = join(homedir(), '.local', 'share', 'opencode', 'opencode.db')
 const APP_VERSION = (
@@ -203,6 +213,44 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
         )
         .get(...filter)
       return { range, count: row?.count ?? 0 }
+    } finally {
+      db.close()
+    }
+  },
+  '/api/message-count': (params) => {
+    const range = params.get('range') ?? '7d'
+    const days = range === 'all' ? null : daysForRange(range)
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
+    try {
+      const where = days === null ? '' : 'WHERE time_created >= ?'
+      const filter: number[] =
+        days === null ? [] : [Date.now() - days * 86_400_000]
+      const row = db
+        .query<{ count: number }, number[]>(
+          `SELECT COUNT(*) AS count FROM message ${where}`
+        )
+        .get(...filter)
+      return { range, count: row?.count ?? 0 }
+    } finally {
+      db.close()
+    }
+  },
+  '/api/day-count': () => {
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
+    try {
+      const row = db
+        .query<{ earliest: number }>(
+          'SELECT MIN(time_created) AS earliest FROM session'
+        )
+        .get()
+      const count = row?.earliest
+        ? (() => {
+            const start = new Date(row.earliest).setHours(0, 0, 0, 0)
+            const today = new Date().setHours(0, 0, 0, 0)
+            return Math.max(1, Math.round((today - start) / 86_400_000))
+          })()
+        : 0
+      return { count }
     } finally {
       db.close()
     }
