@@ -1,0 +1,24 @@
+{
+    "marks": [
+        {
+            "type": "this",
+            "label": "First example",
+            "data": "ABC6"
+        },
+        {
+            "type": "this",
+            "label": "Second example",
+            "data": "EFG9"
+        },
+        {
+            "type": "that",
+            "label": "That example 1",
+            "data": ["AA:BB", "CC:DD", "EE:FF"]
+        },
+        {
+            "type": "that",
+            "label": "Example that 2",
+            "data": ["AAA:Z", "XXX:YYY_ZZZ", "PP:QQ.RR"]
+        }
+    ]
+}

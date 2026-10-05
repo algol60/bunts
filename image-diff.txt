@@ -1,0 +1,151 @@
+diff --git a/packages/examples/src/input-select-layout-demo.ts b/packages/examples/src/input-select-layout-demo.ts
+index 240b4bab..b1e7dd40 100644
+--- a/packages/examples/src/input-select-layout-demo.ts
++++ b/packages/examples/src/input-select-layout-demo.ts
+@@ -1,13 +1,36 @@
+-import { CliRenderer, BoxRenderable, TextRenderable, createCliRenderer, type KeyEvent } from "@opentui/core"
++import {
++  CliRenderer,
++  BoxRenderable,
++  ImageRenderable,
++  TextRenderable,
++  createCliRenderer,
++  type KeyEvent,
++} from "@opentui/core"
+ import { InputRenderable, InputRenderableEvents } from "@opentui/core"
+ import { SelectRenderable, SelectRenderableEvents, type SelectOption } from "@opentui/core"
+ import { setupCommonDemoKeys } from "./lib/standalone-keys.js"
+ 
++// @ts-ignore Bun embeds imported assets and returns their runtime paths.
++import backdropPath from "./taylorswift192.png" with { type: "image/png" }
++
++const BACKDROP_OPACITY = 0.35
++const SELECT_BACKDROP_ZINDEX = -1
++// Terminal cells are roughly twice as tall as wide, so a square source image needs
++// a cell box twice as wide as it is tall for `fit` to paint it edge to edge.
++const BACKDROP_WIDTH = 12
++const BACKDROP_HEIGHT = 6
++// A translucent fill would be flattened to opaque inside the select's own frame
++// buffer, so the highlighted row stays transparent and the ">" marker carries the
++// selection while the backdrop image remains visible through the list.
++const SELECTED_ROW_BACKGROUND_COLOR = "transparent"
++
+ let renderer: CliRenderer | null = null
+ let header: TextRenderable | null = null
+ let headerBox: BoxRenderable | null = null
+ let selectContainer: BoxRenderable | null = null
+ let selectContainerBox: BoxRenderable | null = null
++let selectBackdrop: ImageRenderable | null = null
++let selectBackdropFrame: BoxRenderable | null = null
+ let leftSelect: SelectRenderable | null = null
+ let leftSelectBox: BoxRenderable | null = null
+ let rightSelect: SelectRenderable | null = null
+@@ -95,6 +118,33 @@ function createLayoutElements(rendererInstance: CliRenderer): void {
+ 
+   selectContainerBox.add(selectContainer)
+ 
++  selectBackdropFrame = new BoxRenderable(renderer, {
++    id: "select-backdrop-frame",
++    position: "absolute",
++    left: 0,
++    top: 0,
++    width: "100%",
++    height: "100%",
++    justifyContent: "flex-end",
++    alignItems: "flex-end",
++    backgroundColor: "transparent",
++    shouldFill: false,
++    zIndex: SELECT_BACKDROP_ZINDEX,
++  })
++
++  selectBackdrop = new ImageRenderable(renderer, {
++    id: "select-backdrop",
++    source: backdropPath,
++    fit: "fit",
++    opacity: BACKDROP_OPACITY,
++    width: BACKDROP_WIDTH,
++    height: BACKDROP_HEIGHT,
++    flexGrow: 0,
++    flexShrink: 0,
++  })
++
++  selectBackdropFrame.add(selectBackdrop)
++
+   leftSelectBox = new BoxRenderable(renderer, {
+     id: "color-select-box",
+     zIndex: 0,
+@@ -110,6 +160,7 @@ function createLayoutElements(rendererInstance: CliRenderer): void {
+     flexShrink: 1,
+     backgroundColor: "transparent",
+     border: true,
++    shouldFill: false,
+   })
+ 
+   leftSelect = new SelectRenderable(renderer, {
+@@ -119,22 +170,23 @@ function createLayoutElements(rendererInstance: CliRenderer): void {
+     height: "auto",
+     minHeight: 6,
+     options: colorOptions,
+-    backgroundColor: "#1e293b",
+-    focusedBackgroundColor: "#2d3748",
++    backgroundColor: "transparent",
++    focusedBackgroundColor: "transparent",
+     textColor: "#e2e8f0",
+     focusedTextColor: "#f7fafc",
+-    selectedBackgroundColor: "#3b82f6",
++    selectedBackgroundColor: SELECTED_ROW_BACKGROUND_COLOR,
+     selectedTextColor: "#ffffff",
+-    descriptionColor: "#94a3b8",
+-    selectedDescriptionColor: "#cbd5e1",
+     showScrollIndicator: true,
+     wrapSelection: true,
+-    showDescription: true,
++    // Descriptions would draw opaque glyph cells across the backdrop image, so the
++    // color list stays single-line and the image stays visible behind it.
++    showDescription: false,
+     flexGrow: 1,
+     flexShrink: 1,
+   })
+ 
+   leftSelectBox.add(leftSelect)
++  leftSelectBox.add(selectBackdropFrame)
+ 
+   rightSelectBox = new BoxRenderable(renderer, {
+     id: "size-select-box",
+@@ -151,6 +203,7 @@ function createLayoutElements(rendererInstance: CliRenderer): void {
+     flexShrink: 1,
+     backgroundColor: "transparent",
+     border: true,
++    shouldFill: false,
+   })
+ 
+   rightSelect = new SelectRenderable(renderer, {
+@@ -160,8 +213,8 @@ function createLayoutElements(rendererInstance: CliRenderer): void {
+     height: "auto",
+     minHeight: 6,
+     options: sizeOptions,
+-    backgroundColor: "#1e293b",
+-    focusedBackgroundColor: "#2d3748",
++    backgroundColor: "transparent",
++    focusedBackgroundColor: "transparent",
+     textColor: "#e2e8f0",
+     focusedTextColor: "#f7fafc",
+     selectedBackgroundColor: "#059669",
+@@ -382,6 +435,8 @@ export function destroy(rendererInstance: CliRenderer): void {
+   }
+ 
+   // Properly destroy all elements that need cleanup
++  if (selectBackdrop) selectBackdrop.destroy()
++  if (selectBackdropFrame) selectBackdropFrame.destroy()
+   if (leftSelect) leftSelect.destroy()
+   if (rightSelect) rightSelect.destroy()
+   if (textInput) textInput.destroy()
+@@ -397,6 +452,8 @@ export function destroy(rendererInstance: CliRenderer): void {
+   headerBox = null
+   selectContainer = null
+   selectContainerBox = null
++  selectBackdrop = null
++  selectBackdropFrame = null
+   leftSelect = null
+   leftSelectBox = null
+   rightSelect = null
