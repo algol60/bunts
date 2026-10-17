@@ -1,0 +1,26 @@
+{
+  "name": "dirselect",
+  "version": "1.0.0",
+  "description": "TUI directory selection manager built with TypeScript and @opentui/core",
+  "type": "module",
+  "private": true,
+  "module": "src/main.ts",
+  "bin": {
+    "dirselect": "src/main.ts"
+  },
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@opentui/core": "0.6.6"
+  }
+}
