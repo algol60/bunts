@@ -30,7 +30,7 @@ dirs=( \
     $HOME/.local/bin \
     $HOME/.bun \
 )
-echo "DIRS ${dirs[@]}"
+# echo "DIRS ${dirs[@]}"
 
 wrap_dirs=''
 for dir in "${dirs[@]}"; do
@@ -69,4 +69,4 @@ exec                            \
     --chdir $HOME/Projects      \
     --seccomp 11                \
     $EXE                        \
-    11< <(cat keyctl.bpf)
+    11< keyctl.bpf
