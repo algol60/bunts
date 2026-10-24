@@ -1,0 +1,48 @@
+--new-session
+
+bwrap's man page for --new-session:
+Create a new terminal session for the sandbox (calls setsid()). This disconnects the sandbox from the controlling terminal …
+setsid() makes the sandboxed process a session leader with no controlling terminal. Your pty is still on fds 0/1/2 and still works for read/write, but the kernel only lets you change its foreground process group (TIOCGPGRP/TIOCSPGRP) if that tty is the controlling terminal of your session. It isn't any more, so both calls return ENOTTY. bash hits exactly this in initialize_job_control():
+1. tcgetpgrp() fails → bash: cannot set terminal process group (1): Inappropriate ioctl for device
+2. monitor mode is turned off → bash: no job control in this shell
+The (1) is a process group, not PID 1. bash never got as far as setpgid(), so it is still sitting in bwrap's init pgrp. (Verified inside the sandbox: PID 1 = bwrap init, PID 2 = your payload, so bash is not init; --as-pid-1 is unrelated and would only make things worse.)
+Reproduced with your exact flag set, driving it through a real pty:
+=== with --new-session
+bash: cannot set terminal process group (1): Inappropriate ioctl for device
+bash: no job control in this shell
+PID=2 PGID=1     flags=hiBHc        <- no 'm'
+=== without --new-session
+PID=2 PGID=2     flags=himBHc       <- job control on, no warnings
+Also tested Ctrl‑C on a foreground sleep 4 inside an interactive bash: with --new-session the signal goes to bwrap's pgrp and kills the whole sandbox (wait status = killed by SIGINT); without it, the interrupt reaches the foreground job and the shell survives.
+Options
+A. Drop --new-session (recommended here). On this kernel the thing it defends against is already off globally:
+$ cat /proc/sys/dev/tty/legacy_tiocsti
+0
+The man page itself says the purpose is preventing TIOCSTI input injection (CVE‑2017‑5226), and "if you don't use --new-session, it is recommended to use seccomp to disallow the TIOCSTI ioctl". With legacy_tiocsti=0 the kernel already rejects TIOCSTI, so removing the flag costs nothing today.
+B. A + explicit TIOCSTI block in the seccomp filter (belt and braces, and safe if the sysctl is ever flipped back to 1). In make_bpf.py, alongside DENIED_SYSCALLS:
+TIOCSTI = 0x5412
+filt.add_rule(seccomp.ERRNO(errno.EPERM), 'ioctl',
+              args=[seccomp.Arg(1, seccomp.EQ, TIOCSTI)])
+then re-run ./make_bpf.py to regenerate keyctl.bpf. ioctl args are compareable, so this is an exact match on the request number.
+C. Keep --new-session, give the shell a private pty. Wrapping the payload, e.g. python3 -c 'import pty; pty.spawn(["/bin/bash"])', does give a clean prompt with job control (script(1) isn't installed on this box). But it adds a layer and Ctrl‑C at the outer terminal still lands on bwrap, killing the sandbox.
+D. Do nothing. The warning is cosmetic for exe=(opencode --standalone) — a raw‑mode TUI doesn't use job control. It only bites the exe=(bash ...) debugging path (line 102 currently), where you also lose fg/bg/Ctrl‑Z and Ctrl‑C kills the whole sandbox.
+
+--unshare-net
+
+What's happening
+Nothing is wrong with the loopback setup in oc.sh — bwrap does bring lo up. I verified with your exact flags:
+1: lo: <LOOPBACK,UP,LOWER_UP> ...
+but a host listener (python3 -m http.server on 127.0.0.1:8099) is unreachable from inside:
+curl: (7) Failed to connect to 127.0.0.1 port 8099
+--unshare-net (oc.sh:112) creates a new network namespace. 127.0.0.1 is per-namespace, so the sandbox gets a private loopback with nothing listening on it, plus no routes at all. There's no flag that lets one namespace "see" another's loopback — you either share the host's network namespace or build an explicit path between the two. The comment block at oc.sh:24–32 describes this correctly; it's just not the behaviour you want.
+Two WSL2-specific consequences of the same namespace: /etc/resolv.conf points at 10.255.255.254 (host-side) and the WSL localhost→Windows forwarding lives on the host loopback, so neither DNS nor Windows-side services resolve inside the sandbox.
+Options
+1. Drop --unshare-net — simplest, one-line change (oc.sh:112)
+Sandbox joins the host netns: 127.0.0.1, WSL/Windows localhost forwarding, and DNS all work. Trade-off: the sandbox gets the host's full network — internet, LAN, every host service. Update the header comment at lines 24–32 to say so.
+2. Keep isolation, use pasta/slirp4netns
+sudo dnf install passt, then run pasta --netns /proc/<bwrap-pid>/ns/net --map-host-loopback <addr> as a helper and point the client at <addr> instead of 127.0.0.1. Sandbox keeps its own netns with NAT; host loopback is reachable only via the mapped address. Fiddly: needs the helper started against bwrap's netns before the payload connects. If the client hardcodes 127.0.0.1, you'd additionally need a NAT REDIRECT inside the sandbox (the netns is owned by bwrap's userns, so CAP_NET_ADMIN is available there).
+3. Forward over a unix socket
+Run e.g. socat UNIX-LISTEN:$HOME/tmp/fwd.sock,fork TCP:127.0.0.1:PORT outside the sandbox and --bind the socket into it. Keeps the netns empty; exposes exactly one service. Only works if the client speaks unix sockets.
+4. Run the service inside the sandbox
+If it's something you spawn yourself (model server, dev server), put it in the same bwrap invocation — 127.0.0.1 works today with zero changes.
+

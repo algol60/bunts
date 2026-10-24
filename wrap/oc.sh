@@ -21,7 +21,18 @@
 # (/bin -> usr/bin, /lib -> usr/lib, /lib64 -> usr/lib64) and keeps its CA
 # bundle under /etc/pki.
 #
-# Network isolation is not handled here; it is done by a separate BPF program.
+# Network isolation: --unshare-net below gives the sandbox its own network
+# namespace.  The only interface in it is loopback, which bwrap brings up
+# itself, so 127.0.0.1/::1 work and nothing outside the namespace is
+# reachable (no routes and no other links exist at all).  This needs no root:
+# it rides on the unprivileged user namespace bwrap already creates.
+#
+# Note that this is a private loopback, not the host's.  A server listening
+# on 127.0.0.1 inside the sandbox is invisible to the host, and host-local
+# services (a model server, a proxy) are invisible to the sandbox.
+#
+# The seccomp filter built by make_bpf.py is orthogonal: it filters syscalls,
+# not packets.
 #
 
 set -euo pipefail
@@ -88,6 +99,7 @@ done
 # Use this to start opencode.
 #
 exe=( opencode --standalone )
+#exe=( bash )
 
 exec bwrap \
     --proc /proc \
@@ -106,6 +118,7 @@ exec bwrap \
     --setenv PATH "/usr/local/bin:/usr/bin:$HOME/.local/bin:$HOME/.bun/bin" \
     --setenv TMPDIR /tmp \
     --setenv TERM "${TERM:-xterm-256color}" \
+    --setenv OPENCODE_MODELS_URL 'http://127.0.0.1:8000' \
     --symlink usr/lib /lib \
     --symlink usr/bin /bin \
     --symlink usr/lib64 /lib64 \
@@ -115,3 +128,7 @@ exec bwrap \
     --seccomp 11 \
     "${exe[@]}" "$@" \
     11< "$bpf"
+
+# --new-session
+# --unshare-net
+
