@@ -1,0 +1,29 @@
+{
+  "name": "ts-pymcp",
+  "version": "1.0.0",
+  "description": "MCP v2 server that executes Python through the pyrunner service",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "ts-pymcp": "./src/main.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "dev": "bun --watch src/main.ts",
+    "test": "bun test",
+    "test:unit": "bun test tests/config.test.ts tests/client.test.ts tests/server.test.ts tests/http.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@types/bun": "^1.4.4",
+    "typescript": "^5.9.0"
+  }
+}
