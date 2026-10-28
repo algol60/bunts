@@ -127,7 +127,7 @@ function loadTokenData(range: string, days: number | null): TokenResponse {
            date(time_created / 1000, 'unixepoch', 'localtime') AS day,
            SUM(tokens_input) AS input_tokens,
            SUM(tokens_output) AS output_tokens
-         FROM session
+         FROM session_v2
          ${where}
          GROUP BY day
          ORDER BY day`
@@ -213,7 +213,7 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
         days === null ? [] : [Date.now() - days * 86_400_000]
       const row = db
         .query<{ count: number }, number[]>(
-          `SELECT COUNT(*) AS count FROM session ${where}`
+          `SELECT COUNT(*) AS count FROM session_v2 ${where}`
         )
         .get(...filter)
       return { range, count: row?.count ?? 0 }
@@ -226,12 +226,15 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
     const days = range === 'all' ? null : daysForRange(range)
     const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
     try {
-      const where = days === null ? '' : 'WHERE time_created >= ?'
+      const where =
+        days === null
+          ? `WHERE type IN ('user', 'assistant')`
+          : `WHERE type IN ('user', 'assistant') AND time_created >= ?`
       const filter: number[] =
         days === null ? [] : [Date.now() - days * 86_400_000]
       const row = db
         .query<{ count: number }, number[]>(
-          `SELECT COUNT(*) AS count FROM message ${where}`
+          `SELECT COUNT(*) AS count FROM session_message ${where}`
         )
         .get(...filter)
       return { range, count: row?.count ?? 0 }
@@ -244,7 +247,7 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
     try {
       const row = db
         .query<{ earliest: number }, never[]>(
-          'SELECT MIN(time_created) AS earliest FROM session'
+          'SELECT MIN(time_created) AS earliest FROM session_v2'
         )
         .get()
       const count = row?.earliest
@@ -311,13 +314,13 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
     try {
       const where =
         days === null
-          ? `WHERE data->>'$.type' = 'tool'`
-          : `WHERE data->>'$.type' = 'tool' AND time_created >= ?`
+          ? `WHERE m.type = 'assistant' AND json_extract(part.value, '$.type') = 'tool'`
+          : `WHERE m.type = 'assistant' AND json_extract(part.value, '$.type') = 'tool' AND m.time_created >= ?`
       const filter: number[] = days === null ? [] : [Date.now() - days * 86_400_000]
       const rows = db
         .query<{ tool: string; toolcount: number }, number[]>(
-          `SELECT data->>'$.tool' AS tool, COUNT(*) AS toolcount
-           FROM part
+          `SELECT json_extract(part.value, '$.name') AS tool, COUNT(*) AS toolcount
+           FROM session_message m, json_each(m.data, '$.content') part
            ${where}
            GROUP BY tool
            ORDER BY toolcount DESC, tool ASC`
