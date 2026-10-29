@@ -307,6 +307,72 @@ const router: Record<string, (params: URLSearchParams) => unknown> = {
     const range = params.get('range') ?? '7d'
     return loadTokenData(range, range === 'all' ? null : daysForRange(range))
   },
+  '/api/model-tokens': (params) => {
+    const range = params.get('range') ?? '7d'
+    const days = range === 'all' ? null : daysForRange(range)
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
+    try {
+      const where =
+        days === null
+          ? `WHERE type = 'assistant'`
+          : `WHERE type = 'assistant' AND time_created >= ?`
+      const filter: number[] =
+        days === null ? [] : [Date.now() - days * 86_400_000]
+      const rows = db
+        .query<{ model: string | null; total_tokens: number }, number[]>(
+          `SELECT
+             SUM(
+               json_extract(data, '$.tokens.input')
+               + json_extract(data, '$.tokens.output')
+               + json_extract(data, '$.tokens.reasoning')
+               + json_extract(data, '$.tokens.cache.read')
+               + json_extract(data, '$.tokens.cache.write')
+             ) AS total_tokens,
+             json_extract(data, '$.model.id') AS model
+           FROM session_message
+           ${where}
+           GROUP BY model
+           ORDER BY total_tokens DESC, model ASC`
+        )
+        .all(...filter)
+      return {
+        range,
+        labels: rows.map((r) => r.model ?? 'Unknown'),
+        data: rows.map((r) => r.total_tokens ?? 0),
+      }
+    } finally {
+      db.close()
+    }
+  },
+  '/api/model-steps': (params) => {
+    const range = params.get('range') ?? '7d'
+    const days = range === 'all' ? null : daysForRange(range)
+    const db = new Database(OPENCODE_DB, { readonly: true, strict: true })
+    try {
+      const where =
+        days === null
+          ? `WHERE type = 'assistant'`
+          : `WHERE type = 'assistant' AND time_created >= ?`
+      const filter: number[] =
+        days === null ? [] : [Date.now() - days * 86_400_000]
+      const rows = db
+        .query<{ model: string | null; steps: number }, number[]>(
+          `SELECT COUNT(*) AS steps, json_extract(data, '$.model.id') AS model
+           FROM session_message
+           ${where}
+           GROUP BY model
+           ORDER BY steps DESC, model ASC`
+        )
+        .all(...filter)
+      return {
+        range,
+        labels: rows.map((r) => r.model ?? 'Unknown'),
+        data: rows.map((r) => r.steps),
+      }
+    } finally {
+      db.close()
+    }
+  },
   '/api/tool-usage': (params) => {
     const range = params.get('range') ?? '7d'
     const days = range === 'all' ? null : daysForRange(range)

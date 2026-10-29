@@ -271,6 +271,62 @@ async function loadTokenChart(range: string) {
   })
 }
 
+async function loadModelTokenChart(range: string) {
+  const data = await getJSON<{
+    range: string
+    labels: string[]
+    data: number[]
+  }>(`/api/model-tokens?range=${range}`)
+
+  createChart('modelTokenChart', {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [
+        {
+          label: 'Tokens',
+          data: data.data,
+          backgroundColor: PALETTE[0] + 'cc',
+          borderColor: PALETTE[0],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      ...commonOptions(),
+      indexAxis: 'y',
+    },
+  })
+}
+
+async function loadModelStepChart(range: string) {
+  const data = await getJSON<{
+    range: string
+    labels: string[]
+    data: number[]
+  }>(`/api/model-steps?range=${range}`)
+
+  createChart('modelStepChart', {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [
+        {
+          label: 'Steps',
+          data: data.data,
+          backgroundColor: PALETTE[0] + 'cc',
+          borderColor: PALETTE[0],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      ...commonOptions(),
+      indexAxis: 'y',
+    },
+  })
+}
+
 async function loadToolChart(range: string) {
   const data = await getJSON<{ labels: string[]; data: number[] }>(
     `/api/tool-usage?range=${range}`
@@ -338,6 +394,8 @@ const PAGES: Record<PageName, () => Promise<void>> = {
     await Promise.all([
       loadLineChart(rangeValue()),
       loadBarChart(),
+      loadModelTokenChart(rangeValue()),
+      loadModelStepChart(rangeValue()),
       loadSessionCount(rangeValue()),
       loadMessageCount(rangeValue()),
       loadDayCount(),
