@@ -1,0 +1,17 @@
+{
+  "mcp": {
+    "servers": {
+      "weather_ts": {
+        "type": "remote",
+        "url": "http://127.0.0.1:8020/"
+      },
+      "weather_ts2": {
+        "type": "remote",
+        "url": "http://127.0.0.1:8020/mcp",
+        "headers": {
+          "authorization": "Bearer 0284a647591b45589b6f31fbea8a86217d58fdc71bda4d5ab5660bd07dd46aad"
+        }
+      }
+    }
+  }
+}
